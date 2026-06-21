@@ -232,8 +232,9 @@
 </head>
 <body>
   <div data-composition-id="trustpay-demo" data-width="1920" data-height="1080" data-start="0">
-    <audio id="narration" data-track-index="10" src="narration.mp3"></audio>
-    <!-- Scene 1: Title -->
+    <audio id="narration" data-track-index="10" data-start="0" src="narration.mp3"></audio>
+
+    <!-- Scene 1: Title (0-7s) - "Welcome to TrustPay..." -->
     <div id="scene1" class="scene" style="opacity: 1; visibility: visible;">
       <div class="glow glow-1"></div>
       <div class="glow glow-2"></div>
@@ -242,7 +243,7 @@
       <div id="sub1" class="subtitle">Welcome to TrustPay - the privacy-preserving AI agent payment system</div>
     </div>
 
-    <!-- Scene 2: Features -->
+    <!-- Scene 2: Features (7-18s) - "Secure identity, policy control..." -->
     <div id="scene2" class="scene">
       <div class="feature-grid">
         <div class="feature-card">
@@ -264,7 +265,7 @@
       <div id="sub2" class="subtitle">Secure identity, policy control, and tamper-proof audit trails</div>
     </div>
 
-    <!-- Scene 3: Flow -->
+    <!-- Scene 3: Flow (18-32s) - "Register, authorize, execute..." -->
     <div id="scene3" class="scene">
       <div class="flow-container">
         <div class="flow-step">
@@ -294,7 +295,7 @@
       <div id="sub3" class="subtitle">Register, authorize, execute, and audit - a simple 4-step workflow</div>
     </div>
 
-    <!-- Scene 4: Stats -->
+    <!-- Scene 4: Stats (32-40s) - "41 unit tests..." -->
     <div id="scene4" class="scene">
       <div class="stats-container">
         <div class="stat-item">
@@ -317,7 +318,7 @@
       <div id="sub4" class="subtitle">41 unit tests, 9 API endpoints, 4 policy types, 100% type safety</div>
     </div>
 
-    <!-- Scene 5: Code -->
+    <!-- Scene 5: Code (40-44s) - "Simple TypeScript API..." -->
     <div id="scene5" class="scene">
       <div class="code-block">
         <div class="code-line"><span class="code-comment">// Register agent</span></div>
@@ -332,7 +333,7 @@
       <div id="sub5" class="subtitle">Simple TypeScript API with full type safety</div>
     </div>
 
-    <!-- Scene 6: CTA -->
+    <!-- Scene 6: CTA (44-47s) - "Built with Terminal 3..." -->
     <div id="scene6" class="scene">
       <div class="glow glow-1"></div>
       <div class="glow glow-2"></div>
@@ -344,59 +345,59 @@
     <script>
       const tl = gsap.timeline({ paused: true });
 
-      // Scene 1: Title (0-4s)
+      // Scene 1: Title (0-7s) - "Welcome to TrustPay..."
       tl.set("#scene1", { visibility: "visible" }, 0);
       tl.from("#scene1 .hero-title", { y: 50, opacity: 0, duration: 0.8, ease: "power3.out" }, 0.3);
       tl.from("#scene1 .hero-subtitle", { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, 0.6);
       tl.fromTo("#sub1", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5 }, 1);
-      tl.set("#scene1", { visibility: "hidden" }, 4);
+      tl.set("#scene1", { visibility: "hidden" }, 7);
 
-      // Scene 2: Features (4-9s)
-      tl.set("#scene2", { visibility: "visible" }, 4);
-      tl.fromTo("#scene2", { opacity: 0 }, { opacity: 1, duration: 0.5 }, 4);
-      tl.from("#scene2 .feature-card:nth-child(1)", { y: 40, opacity: 0, duration: 0.6, ease: "power3.out" }, 4.3);
-      tl.from("#scene2 .feature-card:nth-child(2)", { y: 40, opacity: 0, duration: 0.6, ease: "power3.out" }, 4.5);
-      tl.from("#scene2 .feature-card:nth-child(3)", { y: 40, opacity: 0, duration: 0.6, ease: "power3.out" }, 4.7);
-      tl.fromTo("#sub2", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5 }, 5.5);
-      tl.set("#scene2", { visibility: "hidden" }, 9);
+      // Scene 2: Features (7-18s) - "Secure identity, policy control..."
+      tl.set("#scene2", { visibility: "visible" }, 7);
+      tl.fromTo("#scene2", { opacity: 0 }, { opacity: 1, duration: 0.5 }, 7);
+      tl.from("#scene2 .feature-card:nth-child(1)", { y: 40, opacity: 0, duration: 0.6, ease: "power3.out" }, 7.5);
+      tl.from("#scene2 .feature-card:nth-child(2)", { y: 40, opacity: 0, duration: 0.6, ease: "power3.out" }, 8);
+      tl.from("#scene2 .feature-card:nth-child(3)", { y: 40, opacity: 0, duration: 0.6, ease: "power3.out" }, 8.5);
+      tl.fromTo("#sub2", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5 }, 9);
+      tl.set("#scene2", { visibility: "hidden" }, 18);
 
-      // Scene 3: Flow (9-14s)
-      tl.set("#scene3", { visibility: "visible" }, 9);
-      tl.fromTo("#scene3", { opacity: 0 }, { opacity: 1, duration: 0.5 }, 9);
-      tl.from("#scene3 .flow-step:nth-child(1)", { x: -30, opacity: 0, duration: 0.5, ease: "power3.out" }, 9.3);
-      tl.from("#scene3 .flow-arrow:nth-child(2)", { opacity: 0, duration: 0.3 }, 9.6);
-      tl.from("#scene3 .flow-step:nth-child(3)", { x: -30, opacity: 0, duration: 0.5, ease: "power3.out" }, 9.8);
-      tl.from("#scene3 .flow-arrow:nth-child(4)", { opacity: 0, duration: 0.3 }, 10.1);
-      tl.from("#scene3 .flow-step:nth-child(5)", { x: -30, opacity: 0, duration: 0.5, ease: "power3.out" }, 10.3);
-      tl.from("#scene3 .flow-arrow:nth-child(6)", { opacity: 0, duration: 0.3 }, 10.6);
-      tl.from("#scene3 .flow-step:nth-child(7)", { x: -30, opacity: 0, duration: 0.5, ease: "power3.out" }, 10.8);
-      tl.fromTo("#sub3", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5 }, 11.5);
-      tl.set("#scene3", { visibility: "hidden" }, 14);
+      // Scene 3: Flow (18-32s) - "Register, authorize, execute..."
+      tl.set("#scene3", { visibility: "visible" }, 18);
+      tl.fromTo("#scene3", { opacity: 0 }, { opacity: 1, duration: 0.5 }, 18);
+      tl.from("#scene3 .flow-step:nth-child(1)", { x: -30, opacity: 0, duration: 0.5, ease: "power3.out" }, 19);
+      tl.from("#scene3 .flow-arrow:nth-child(2)", { opacity: 0, duration: 0.3 }, 19.5);
+      tl.from("#scene3 .flow-step:nth-child(3)", { x: -30, opacity: 0, duration: 0.5, ease: "power3.out" }, 20);
+      tl.from("#scene3 .flow-arrow:nth-child(4)", { opacity: 0, duration: 0.3 }, 20.5);
+      tl.from("#scene3 .flow-step:nth-child(5)", { x: -30, opacity: 0, duration: 0.5, ease: "power3.out" }, 21);
+      tl.from("#scene3 .flow-arrow:nth-child(6)", { opacity: 0, duration: 0.3 }, 21.5);
+      tl.from("#scene3 .flow-step:nth-child(7)", { x: -30, opacity: 0, duration: 0.5, ease: "power3.out" }, 22);
+      tl.fromTo("#sub3", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5 }, 23);
+      tl.set("#scene3", { visibility: "hidden" }, 32);
 
-      // Scene 4: Stats (14-18s)
-      tl.set("#scene4", { visibility: "visible" }, 14);
-      tl.fromTo("#scene4", { opacity: 0 }, { opacity: 1, duration: 0.5 }, 14);
-      tl.from("#scene4 .stat-item:nth-child(1)", { y: 30, opacity: 0, duration: 0.5, ease: "power3.out" }, 14.3);
-      tl.from("#scene4 .stat-item:nth-child(2)", { y: 30, opacity: 0, duration: 0.5, ease: "power3.out" }, 14.5);
-      tl.from("#scene4 .stat-item:nth-child(3)", { y: 30, opacity: 0, duration: 0.5, ease: "power3.out" }, 14.7);
-      tl.from("#scene4 .stat-item:nth-child(4)", { y: 30, opacity: 0, duration: 0.5, ease: "power3.out" }, 14.9);
-      tl.fromTo("#sub4", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5 }, 15.5);
-      tl.set("#scene4", { visibility: "hidden" }, 18);
+      // Scene 4: Stats (32-40s) - "41 unit tests..."
+      tl.set("#scene4", { visibility: "visible" }, 32);
+      tl.fromTo("#scene4", { opacity: 0 }, { opacity: 1, duration: 0.5 }, 32);
+      tl.from("#scene4 .stat-item:nth-child(1)", { y: 30, opacity: 0, duration: 0.5, ease: "power3.out" }, 33);
+      tl.from("#scene4 .stat-item:nth-child(2)", { y: 30, opacity: 0, duration: 0.5, ease: "power3.out" }, 33.5);
+      tl.from("#scene4 .stat-item:nth-child(3)", { y: 30, opacity: 0, duration: 0.5, ease: "power3.out" }, 34);
+      tl.from("#scene4 .stat-item:nth-child(4)", { y: 30, opacity: 0, duration: 0.5, ease: "power3.out" }, 34.5);
+      tl.fromTo("#sub4", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5 }, 35);
+      tl.set("#scene4", { visibility: "hidden" }, 40);
 
-      // Scene 5: Code (18-22s)
-      tl.set("#scene5", { visibility: "visible" }, 18);
-      tl.fromTo("#scene5", { opacity: 0 }, { opacity: 1, duration: 0.5 }, 18);
-      tl.from("#scene5 .code-block", { y: 20, opacity: 0, duration: 0.6, ease: "power3.out" }, 18.3);
-      tl.fromTo("#sub5", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5 }, 19);
-      tl.set("#scene5", { visibility: "hidden" }, 22);
+      // Scene 5: Code (40-44s) - "Simple TypeScript API..."
+      tl.set("#scene5", { visibility: "visible" }, 40);
+      tl.fromTo("#scene5", { opacity: 0 }, { opacity: 1, duration: 0.5 }, 40);
+      tl.from("#scene5 .code-block", { y: 20, opacity: 0, duration: 0.6, ease: "power3.out" }, 40.5);
+      tl.fromTo("#sub5", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5 }, 41);
+      tl.set("#scene5", { visibility: "hidden" }, 44);
 
-      // Scene 6: CTA (22-26s)
-      tl.set("#scene6", { visibility: "visible" }, 22);
-      tl.fromTo("#scene6", { opacity: 0 }, { opacity: 1, duration: 0.5 }, 22);
-      tl.from("#scene6 .cta-text", { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, 22.3);
-      tl.from("#scene6 .cta-link", { y: 20, opacity: 0, duration: 0.5, ease: "power3.out" }, 22.6);
-      tl.fromTo("#sub6", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5 }, 23);
-      tl.set("#scene6", { visibility: "hidden" }, 26);
+      // Scene 6: CTA (44-47s) - "Built with Terminal 3..."
+      tl.set("#scene6", { visibility: "visible" }, 44);
+      tl.fromTo("#scene6", { opacity: 0 }, { opacity: 1, duration: 0.5 }, 44);
+      tl.from("#scene6 .cta-text", { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, 44.3);
+      tl.from("#scene6 .cta-link", { y: 20, opacity: 0, duration: 0.5, ease: "power3.out" }, 44.6);
+      tl.fromTo("#sub6", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5 }, 45);
+      tl.set("#scene6", { visibility: "hidden" }, 47);
 
       // Register timeline
       window.__timelines = window.__timelines || {};
