@@ -7,6 +7,7 @@ import {
   AuthorizationResult,
   AuthorizationStatus,
   PaymentRequest,
+  PolicyValue,
   VerificationResult,
   VerificationStatus
 } from './models';
@@ -21,6 +22,14 @@ export class AgentAuthSDK {
   }
 
   async registerAgent(config: AgentConfig): Promise<AgentCredential> {
+    if (!config.name || config.name.trim().length === 0) {
+      throw new Error('Agent name is required');
+    }
+    
+    if (!config.capabilities || config.capabilities.length === 0) {
+      throw new Error('At least one capability is required');
+    }
+    
     console.log(`📝 Registering agent: ${config.name}`);
     
     const agentId = `agent_${uuidv4()}`;
@@ -45,6 +54,10 @@ export class AgentAuthSDK {
   }
 
   async verifyAgent(agentId: string): Promise<VerificationResult> {
+    if (!agentId || !agentId.startsWith('agent_')) {
+      throw new Error('Invalid agent ID format');
+    }
+    
     console.log(`🔍 Verifying agent: ${agentId}`);
     
     const credential = this.agents.get(agentId);
@@ -67,6 +80,18 @@ export class AgentAuthSDK {
     agentId: string,
     paymentRequest: PaymentRequest
   ): Promise<AuthorizationResult> {
+    if (!agentId || !agentId.startsWith('agent_')) {
+      throw new Error('Invalid agent ID format');
+    }
+    
+    if (paymentRequest.amount <= 0) {
+      throw new Error('Payment amount must be positive');
+    }
+    
+    if (!paymentRequest.merchant || paymentRequest.merchant.trim().length === 0) {
+      throw new Error('Merchant is required');
+    }
+    
     console.log(`🔎 Checking authorization for agent: ${agentId}`);
     
     const credential = this.agents.get(agentId);
@@ -97,6 +122,18 @@ export class AgentAuthSDK {
               status: AuthorizationStatus.Denied,
               policyChecked: policy.policyType,
               reason: `Merchant ${paymentRequest.merchant} not in allowed list`
+            };
+          }
+          break;
+        }
+        case 'max_single_amount': {
+          const maxSingle = policy.value as number;
+          if (paymentRequest.amount > maxSingle) {
+            return {
+              agentId,
+              status: AuthorizationStatus.Denied,
+              policyChecked: policy.policyType,
+              reason: `Amount ${paymentRequest.amount} exceeds single transaction limit ${maxSingle}`
             };
           }
           break;

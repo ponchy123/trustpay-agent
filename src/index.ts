@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from 'uuid';
 import { AgentAuthSDK } from './agent-sdk';
 import { PaymentProcessor } from './payment';
 import { AuditLogger } from './audit';
@@ -94,7 +95,11 @@ async function demoAgentWorkflow(
       amount: paymentResult.amount
     },
     timestamp: new Date(),
-    integrityHash: auditLogger.calculateHash(paymentResult)
+    integrityHash: auditLogger.calculateHash({
+      paymentId: paymentResult.paymentId,
+      merchant: paymentResult.merchant,
+      amount: paymentResult.amount
+    })
   };
   
   auditLogger.logEntry(auditEntry);
@@ -109,7 +114,7 @@ async function demoAgentWorkflow(
   console.log('=====================================================');
 }
 
-// Import uuid for use in demo
-import { v4 as uuidv4 } from 'uuid';
-
-main().catch(console.error);
+main().catch((error) => {
+  console.error('❌ Error:', error.message);
+  process.exit(1);
+});

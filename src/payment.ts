@@ -17,6 +17,18 @@ export class PaymentProcessor {
   }
 
   async executePayment(request: PaymentRequest): Promise<PaymentResult> {
+    if (!request.agentId || !request.agentId.startsWith('agent_')) {
+      throw new Error('Invalid agent ID');
+    }
+    
+    if (request.amount <= 0) {
+      throw new Error('Payment amount must be positive');
+    }
+    
+    if (!request.merchant || request.merchant.trim().length === 0) {
+      throw new Error('Merchant is required');
+    }
+    
     console.log(`💰 Executing payment: ${request.amount} ${request.currency} to ${request.merchant}`);
     
     // Verify agent identity

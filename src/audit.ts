@@ -2,8 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 import * as crypto from 'crypto';
 import {
   AuditEntry,
-  ComplianceReport,
-  PaymentResult
+  ComplianceReport
 } from './models';
 
 export class AuditLogger {
@@ -14,6 +13,18 @@ export class AuditLogger {
   }
 
   logEntry(entry: AuditEntry): void {
+    if (!entry.entryId || entry.entryId.trim().length === 0) {
+      throw new Error('Entry ID is required');
+    }
+    
+    if (!entry.agentId || entry.agentId.trim().length === 0) {
+      throw new Error('Agent ID is required');
+    }
+    
+    if (!entry.action || entry.action.trim().length === 0) {
+      throw new Error('Action is required');
+    }
+    
     console.log(`📝 Logging audit entry: ${entry.entryId} for agent ${entry.agentId}`);
     
     const agentEntries = this.entries.get(entry.agentId) || [];
@@ -22,6 +33,10 @@ export class AuditLogger {
   }
 
   getEntries(agentId: string): AuditEntry[] {
+    if (!agentId || agentId.trim().length === 0) {
+      throw new Error('Agent ID is required');
+    }
+    
     return this.entries.get(agentId) || [];
   }
 
@@ -29,7 +44,7 @@ export class AuditLogger {
     const entries = this.getEntries(agentId);
     
     const totalAmount = entries.reduce((sum, entry) => {
-      const amount = entry.details.amount || 0;
+      const amount = (entry.details.amount as number) || 0;
       return sum + amount;
     }, 0);
     
@@ -43,7 +58,7 @@ export class AuditLogger {
     };
   }
 
-  calculateHash(data: any): string {
+  calculateHash(data: Record<string, unknown>): string {
     const hash = crypto.createHash('sha256');
     hash.update(JSON.stringify(data));
     return `0x${hash.digest('hex')}`;

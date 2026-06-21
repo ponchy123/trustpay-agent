@@ -5,9 +5,11 @@ export interface AgentConfig {
   authorizationPolicies: AuthorizationPolicy[];
 }
 
+export type PolicyValue = number | string | string[] | Record<string, unknown>;
+
 export interface AuthorizationPolicy {
-  policyType: string;
-  value: any;
+  policyType: 'max_daily_amount' | 'allowed_merchants' | 'max_single_amount' | 'time_restriction';
+  value: PolicyValue;
 }
 
 export interface AgentCredential {
@@ -52,7 +54,7 @@ export interface PaymentRequest {
   amount: number;
   currency: string;
   description: string;
-  metadata: any;
+  metadata: Record<string, unknown>;
 }
 
 export enum PaymentStatus {
@@ -77,7 +79,7 @@ export interface AuditEntry {
   entryId: string;
   agentId: string;
   action: string;
-  details: any;
+  details: Record<string, unknown>;
   timestamp: Date;
   integrityHash: string;
 }
