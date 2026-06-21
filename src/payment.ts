@@ -7,57 +7,57 @@ import {
   PaymentStatus,
   VerificationStatus
 } from './models';
+import { createLogger, Logger } from './logger';
 
 export class PaymentProcessor {
   private sdk: AgentAuthSDK;
+  private logger: Logger;
 
   constructor(sdk: AgentAuthSDK) {
     this.sdk = sdk;
-    console.log('💳 Payment Processor initialized');
+    this.logger = createLogger('Payment');
+    this.logger.info('Initialized');
   }
 
   async executePayment(request: PaymentRequest): Promise<PaymentResult> {
     if (!request.agentId || !request.agentId.startsWith('agent_')) {
       throw new Error('Invalid agent ID');
     }
-    
+
     if (request.amount <= 0) {
       throw new Error('Payment amount must be positive');
     }
-    
+
     if (!request.merchant || request.merchant.trim().length === 0) {
       throw new Error('Merchant is required');
     }
-    
-    console.log(`💰 Executing payment: ${request.amount} ${request.currency} to ${request.merchant}`);
-    
-    // Verify agent identity
+
+    this.logger.info(`Executing payment: ${request.amount} ${request.currency} to ${request.merchant}`);
+
     const verification = await this.sdk.verifyAgent(request.agentId);
     if (verification.status !== VerificationStatus.Verified) {
+      this.logger.error('Agent verification failed');
       throw new Error('Agent verification failed');
     }
-    
-    // Check authorization
+
     const authorization = await this.sdk.checkAuthorization(request.agentId, request);
     if (authorization.status !== 'APPROVED') {
+      this.logger.error(`Authorization denied: ${authorization.reason}`);
       throw new Error(`Authorization denied: ${authorization.reason}`);
     }
-    
-    // Execute payment in TEE (simulated)
+
     const result = await this.simulateTEEPayment(request);
-    
-    console.log(`✅ Payment executed: ${result.paymentId}`);
+
+    this.logger.info(`Payment executed: ${result.paymentId} (tx: ${result.txHash.slice(0, 16)}...)`);
     return result;
   }
 
   private async simulateTEEPayment(request: PaymentRequest): Promise<PaymentResult> {
-    // Simulate TEE-secured payment execution
     const paymentId = `pay_${uuidv4()}`;
     const txHash = this.generateTxHash(request);
-    
-    // Simulate network delay
+
     await new Promise(resolve => setTimeout(resolve, 100));
-    
+
     return {
       paymentId,
       agentId: request.agentId,

@@ -1,11 +1,32 @@
 import { AuditLogger } from './audit';
+import { JsonStorage } from './storage';
 import { AuditEntry } from './models';
+import * as fs from 'fs';
+import * as path from 'path';
+
+const TEST_DATA_DIR = path.join(__dirname, '..', '.test-data');
+
+function cleanupTestDir(): void {
+  if (fs.existsSync(TEST_DATA_DIR)) {
+    fs.rmSync(TEST_DATA_DIR, { recursive: true });
+  }
+}
+
+function createTestStorage(): JsonStorage {
+  cleanupTestDir();
+  return new JsonStorage(TEST_DATA_DIR);
+}
 
 describe('AuditLogger', () => {
   let logger: AuditLogger;
 
   beforeEach(() => {
-    logger = new AuditLogger();
+    const storage = createTestStorage();
+    logger = new AuditLogger(storage);
+  });
+
+  afterAll(() => {
+    cleanupTestDir();
   });
 
   describe('logEntry', () => {
@@ -153,7 +174,7 @@ describe('AuditLogger', () => {
         entryId: 'test-entry-1',
         agentId: 'agent-1',
         action: 'payment_executed',
-        details: { paymentId: 'pay-1', amount: 200.0 }, // Tampered
+        details: { paymentId: 'pay-1', amount: 200.0 },
         timestamp: new Date(),
         integrityHash
       };

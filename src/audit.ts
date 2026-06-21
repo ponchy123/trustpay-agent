@@ -4,51 +4,53 @@ import {
   AuditEntry,
   ComplianceReport
 } from './models';
+import { JsonStorage } from './storage';
+import { createLogger, Logger } from './logger';
 
 export class AuditLogger {
-  private entries: Map<string, AuditEntry[]> = new Map();
+  private storage: JsonStorage;
+  private logger: Logger;
 
-  constructor() {
-    console.log('📋 Audit Logger initialized');
+  constructor(storage?: JsonStorage) {
+    this.storage = storage || new JsonStorage();
+    this.logger = createLogger('Audit');
+    this.logger.info('Initialized');
   }
 
   logEntry(entry: AuditEntry): void {
     if (!entry.entryId || entry.entryId.trim().length === 0) {
       throw new Error('Entry ID is required');
     }
-    
+
     if (!entry.agentId || entry.agentId.trim().length === 0) {
       throw new Error('Agent ID is required');
     }
-    
+
     if (!entry.action || entry.action.trim().length === 0) {
       throw new Error('Action is required');
     }
-    
-    console.log(`📝 Logging audit entry: ${entry.entryId} for agent ${entry.agentId}`);
-    
-    const agentEntries = this.entries.get(entry.agentId) || [];
-    agentEntries.push(entry);
-    this.entries.set(entry.agentId, agentEntries);
+
+    this.storage.saveAuditEntry(entry.agentId, entry);
+    this.logger.debug(`Logged entry ${entry.entryId} for agent ${entry.agentId}`);
   }
 
   getEntries(agentId: string): AuditEntry[] {
     if (!agentId || agentId.trim().length === 0) {
       throw new Error('Agent ID is required');
     }
-    
-    return this.entries.get(agentId) || [];
+
+    return this.storage.getAuditEntries(agentId);
   }
 
   generateReport(agentId: string): ComplianceReport {
     const entries = this.getEntries(agentId);
-    
+
     const totalAmount = entries.reduce((sum, entry) => {
       const amount = (entry.details.amount as number) || 0;
       return sum + amount;
     }, 0);
-    
-    return {
+
+    const report: ComplianceReport = {
       agentId,
       reportId: `report_${uuidv4()}`,
       generatedAt: new Date(),
@@ -56,6 +58,9 @@ export class AuditLogger {
       totalAmount,
       entries
     };
+
+    this.logger.info(`Report generated for ${agentId}: ${entries.length} entries, $${totalAmount.toFixed(2)}`);
+    return report;
   }
 
   calculateHash(data: Record<string, unknown>): string {
@@ -66,6 +71,10 @@ export class AuditLogger {
 
   verifyIntegrity(entry: AuditEntry): boolean {
     const calculatedHash = this.calculateHash(entry.details);
-    return calculatedHash === entry.integrityHash;
+    const valid = calculatedHash === entry.integrityHash;
+    if (!valid) {
+      this.logger.warn(`Integrity check failed for entry ${entry.entryId}`);
+    }
+    return valid;
   }
 }

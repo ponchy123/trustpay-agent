@@ -1,14 +1,38 @@
 import { AgentAuthSDK } from './agent-sdk';
 import { PaymentProcessor } from './payment';
+import { JsonStorage } from './storage';
 import { AgentConfig, PaymentRequest, PaymentStatus } from './models';
+import * as fs from 'fs';
+import * as path from 'path';
+
+const TEST_DATA_DIR = path.join(__dirname, '..', '.test-data-payment');
+
+function cleanupTestDir(): void {
+  if (fs.existsSync(TEST_DATA_DIR)) {
+    fs.rmSync(TEST_DATA_DIR, { recursive: true });
+  }
+}
+
+function createTestProcessor(): PaymentProcessor {
+  cleanupTestDir();
+  const storage = new JsonStorage(TEST_DATA_DIR);
+  const sdk = new AgentAuthSDK('https://sandbox.terminal3.io', storage);
+  return new PaymentProcessor(sdk);
+}
 
 describe('PaymentProcessor', () => {
-  let sdk: AgentAuthSDK;
   let processor: PaymentProcessor;
+  let sdk: AgentAuthSDK;
 
   beforeEach(() => {
-    sdk = new AgentAuthSDK('https://sandbox.terminal3.io');
+    cleanupTestDir();
+    const storage = new JsonStorage(TEST_DATA_DIR);
+    sdk = new AgentAuthSDK('https://sandbox.terminal3.io', storage);
     processor = new PaymentProcessor(sdk);
+  });
+
+  afterAll(() => {
+    cleanupTestDir();
   });
 
   describe('executePayment', () => {
@@ -77,6 +101,34 @@ describe('PaymentProcessor', () => {
 
       await expect(processor.executePayment(request))
         .rejects.toThrow('Authorization denied');
+    });
+
+    it('should reject zero amount', async () => {
+      const request: PaymentRequest = {
+        agentId: 'agent_test',
+        merchant: 'openai.com',
+        amount: 0,
+        currency: 'USD',
+        description: 'API usage',
+        metadata: {}
+      };
+
+      await expect(processor.executePayment(request))
+        .rejects.toThrow('Payment amount must be positive');
+    });
+
+    it('should reject empty merchant', async () => {
+      const request: PaymentRequest = {
+        agentId: 'agent_test',
+        merchant: '',
+        amount: 20.0,
+        currency: 'USD',
+        description: 'API usage',
+        metadata: {}
+      };
+
+      await expect(processor.executePayment(request))
+        .rejects.toThrow('Merchant is required');
     });
   });
 });

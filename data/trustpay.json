@@ -1,0 +1,183 @@
+{
+  "agents": {
+    "agent_b1b172fb-b745-4752-8345-a047590ea69d": {
+      "agentId": "agent_b1b172fb-b745-4752-8345-a047590ea69d",
+      "did": "did:t3:67fb60e6-8ee1-46b8-af7b-7f3f1c7ca42e",
+      "publicKey": "0xa8edf4ce2beb9a237c4aa9bd0a29c95751670cfa6ae33a1c153734b119c2ee6a",
+      "createdAt": "2026-06-21T16:04:28.935Z",
+      "capabilities": [
+        "payment"
+      ],
+      "authorizationPolicies": [
+        {
+          "policyType": "max_daily_amount",
+          "value": 100
+        }
+      ]
+    },
+    "agent_1768e658-a003-404d-81f9-edad23c443f9": {
+      "agentId": "agent_1768e658-a003-404d-81f9-edad23c443f9",
+      "did": "did:t3:1f096e8f-e4c7-4b39-8157-002f4fa5b60d",
+      "publicKey": "0x8669702f538e2888727f774490f83ab1af18c45d10e42b202c4f8f8b708e095e",
+      "createdAt": "2026-06-21T16:04:28.957Z",
+      "capabilities": [
+        "payment"
+      ],
+      "authorizationPolicies": [
+        {
+          "policyType": "max_daily_amount",
+          "value": 100
+        }
+      ]
+    },
+    "agent_7ce112a3-5628-4347-8082-b9ecb4b8b6d1": {
+      "agentId": "agent_7ce112a3-5628-4347-8082-b9ecb4b8b6d1",
+      "did": "did:t3:571cfca2-6261-4954-b818-74495d28c669",
+      "publicKey": "0x47fb6316349f73c1ca2f0c8f8e944ac22d17dfb66474477d8e1b73f496e348ed",
+      "createdAt": "2026-06-21T16:04:28.983Z",
+      "capabilities": [
+        "payment"
+      ],
+      "authorizationPolicies": []
+    },
+    "agent_12469a36-d17a-4758-ba34-7fb085b3a84f": {
+      "agentId": "agent_12469a36-d17a-4758-ba34-7fb085b3a84f",
+      "did": "did:t3:3c463d0b-9a4f-4f17-99ae-cf422add25f4",
+      "publicKey": "0x1398b1ac3b61d73cddd8012ec926f12a0589f431cc662b239c40ec63dfef8d7f",
+      "createdAt": "2026-06-21T16:04:29.006Z",
+      "capabilities": [
+        "payment"
+      ],
+      "authorizationPolicies": [
+        {
+          "policyType": "max_daily_amount",
+          "value": 100
+        }
+      ]
+    },
+    "agent_3af6b013-6e0a-44d2-98da-6cc6eb092313": {
+      "agentId": "agent_3af6b013-6e0a-44d2-98da-6cc6eb092313",
+      "did": "did:t3:e035cb30-101c-4023-9058-2b5004e00454",
+      "publicKey": "0x08907260fa27a8f0f96bf46a8cd9a6c6f5b8c6847c0295e80f063a8f13758e50",
+      "createdAt": "2026-06-21T16:04:29.021Z",
+      "capabilities": [
+        "payment"
+      ],
+      "authorizationPolicies": [
+        {
+          "policyType": "max_daily_amount",
+          "value": 100
+        }
+      ]
+    },
+    "agent_2da635f3-da30-465d-9b81-be3b43ee2f4e": {
+      "agentId": "agent_2da635f3-da30-465d-9b81-be3b43ee2f4e",
+      "did": "did:t3:aafb0b26-6440-432e-b1c2-26d9413bdf3e",
+      "publicKey": "0x952952f2ce70bcd1521c5df743cfa88fa024670a56588748a1aa3ebf9a6124f2",
+      "createdAt": "2026-06-21T16:04:29.031Z",
+      "capabilities": [
+        "payment"
+      ],
+      "authorizationPolicies": [
+        {
+          "policyType": "allowed_merchants",
+          "value": [
+            "allowed.com"
+          ]
+        }
+      ]
+    },
+    "agent_49a14b94-097f-4aa2-a4c5-782903e22d77": {
+      "agentId": "agent_49a14b94-097f-4aa2-a4c5-782903e22d77",
+      "did": "did:t3:a8be87bf-772c-4f58-ba8c-a17fcbf824fa",
+      "publicKey": "0x5de88e1d892160e938eb4d8170cf6e39520ae341ac46d645519afa29bbed85cd",
+      "createdAt": "2026-06-21T16:04:29.084Z",
+      "capabilities": [
+        "payment"
+      ],
+      "authorizationPolicies": [
+        {
+          "policyType": "max_daily_amount",
+          "value": 10
+        }
+      ]
+    },
+    "agent_9be49568-49dc-4be9-97be-c9350e8093c5": {
+      "agentId": "agent_9be49568-49dc-4be9-97be-c9350e8093c5",
+      "did": "did:t3:b248ff8c-30f5-48cb-ab5a-2b5441b7559f",
+      "publicKey": "0xbd4f107d69314a4db7223e1ddf1b30f8223767612147ab558ee9b37883dc1e2b",
+      "createdAt": "2026-06-21T16:05:37.759Z",
+      "capabilities": [
+        "payment",
+        "subscription",
+        "recurring"
+      ],
+      "authorizationPolicies": [
+        {
+          "policyType": "max_daily_amount",
+          "value": 1000
+        },
+        {
+          "policyType": "allowed_merchants",
+          "value": [
+            "openai.com",
+            "anthropic.com",
+            "github.com"
+          ]
+        }
+      ]
+    }
+  },
+  "auditEntries": {
+    "agent-1": [
+      {
+        "entryId": "test-entry-1",
+        "agentId": "agent-1",
+        "action": "payment_executed",
+        "details": {
+          "paymentId": "pay-1",
+          "amount": 100
+        },
+        "timestamp": "2026-06-21T16:04:28.893Z",
+        "integrityHash": "0xabc"
+      },
+      {
+        "entryId": "test-entry-1",
+        "agentId": "agent-1",
+        "action": "payment_executed",
+        "details": {
+          "paymentId": "pay-1",
+          "amount": 100
+        },
+        "timestamp": "2026-06-21T16:04:28.900Z",
+        "integrityHash": "0xabc"
+      },
+      {
+        "entryId": "test-entry-2",
+        "agentId": "agent-1",
+        "action": "payment_executed",
+        "details": {
+          "paymentId": "pay-2",
+          "amount": 200
+        },
+        "timestamp": "2026-06-21T16:04:28.900Z",
+        "integrityHash": "0xdef"
+      }
+    ],
+    "agent_9be49568-49dc-4be9-97be-c9350e8093c5": [
+      {
+        "entryId": "58697d43-dbd1-49ca-bf33-050a3473e306",
+        "agentId": "agent_9be49568-49dc-4be9-97be-c9350e8093c5",
+        "action": "payment_executed",
+        "details": {
+          "paymentId": "pay_f86eab08-0bb9-4c77-ba7e-8305468e7763",
+          "merchant": "openai.com",
+          "amount": 20
+        },
+        "timestamp": "2026-06-21T16:05:37.866Z",
+        "integrityHash": "0xc6944d789bd948967c89d547243e63ceb330454c105411021a2144ec4f918932"
+      }
+    ]
+  },
+  "version": 1
+}

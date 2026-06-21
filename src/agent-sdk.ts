@@ -3,39 +3,50 @@ import * as crypto from 'crypto';
 import {
   AgentConfig,
   AgentCredential,
-  AuthorizationPolicy,
   AuthorizationResult,
   AuthorizationStatus,
   PaymentRequest,
-  PolicyValue,
   VerificationResult,
   VerificationStatus
 } from './models';
+import { JsonStorage } from './storage';
+import { createLogger, Logger } from './logger';
+import { RateLimiter } from './ratelimit';
 
 export class AgentAuthSDK {
   private endpoint: string;
-  private agents: Map<string, AgentCredential> = new Map();
+  private storage: JsonStorage;
+  private logger: Logger;
+  private limiter: RateLimiter;
 
-  constructor(endpoint: string) {
+  constructor(endpoint: string, storage?: JsonStorage) {
     this.endpoint = endpoint;
-    console.log(`🔐 Agent Auth SDK initialized with endpoint: ${endpoint}`);
+    this.storage = storage || new JsonStorage();
+    this.logger = createLogger('AgentAuthSDK');
+    this.limiter = new RateLimiter(100, 60000);
+    this.logger.info(`Initialized with endpoint: ${endpoint}`);
   }
 
   async registerAgent(config: AgentConfig): Promise<AgentCredential> {
     if (!config.name || config.name.trim().length === 0) {
       throw new Error('Agent name is required');
     }
-    
+
     if (!config.capabilities || config.capabilities.length === 0) {
       throw new Error('At least one capability is required');
     }
-    
-    console.log(`📝 Registering agent: ${config.name}`);
-    
+
+    const rateCheck = this.limiter.tryAcquire('register');
+    if (!rateCheck.allowed) {
+      throw new Error(`Rate limit exceeded. Try again in ${Math.ceil(rateCheck.resetIn / 1000)}s`);
+    }
+
+    this.logger.info(`Registering agent: ${config.name}`);
+
     const agentId = `agent_${uuidv4()}`;
     const did = `did:t3:${uuidv4()}`;
     const publicKey = this.generatePublicKey();
-    
+
     const credential: AgentCredential = {
       agentId,
       did,
@@ -44,12 +55,10 @@ export class AgentAuthSDK {
       capabilities: config.capabilities,
       authorizationPolicies: config.authorizationPolicies
     };
-    
-    this.agents.set(agentId, credential);
-    
-    console.log(`✅ Agent registered: ${agentId}`);
-    console.log(`   DID: ${did}`);
-    
+
+    this.storage.saveAgent(credential);
+
+    this.logger.info(`Agent registered: ${agentId} (DID: ${did})`);
     return credential;
   }
 
@@ -57,22 +66,28 @@ export class AgentAuthSDK {
     if (!agentId || !agentId.startsWith('agent_')) {
       throw new Error('Invalid agent ID format');
     }
-    
-    console.log(`🔍 Verifying agent: ${agentId}`);
-    
-    const credential = this.agents.get(agentId);
+
+    const rateCheck = this.limiter.tryAcquire('verify');
+    if (!rateCheck.allowed) {
+      throw new Error(`Rate limit exceeded. Try again in ${Math.ceil(rateCheck.resetIn / 1000)}s`);
+    }
+
+    this.logger.debug(`Verifying agent: ${agentId}`);
+
+    const credential = this.storage.getAgent(agentId);
     if (!credential) {
+      this.logger.warn(`Agent not found: ${agentId}`);
       throw new Error(`Agent not found: ${agentId}`);
     }
-    
+
     const result: VerificationResult = {
       agentId,
       status: VerificationStatus.Verified,
       verifiedAt: new Date(),
-      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
+      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
     };
-    
-    console.log(`✅ Agent verified: ${agentId}`);
+
+    this.logger.info(`Agent verified: ${agentId}`);
     return result;
   }
 
@@ -83,28 +98,34 @@ export class AgentAuthSDK {
     if (!agentId || !agentId.startsWith('agent_')) {
       throw new Error('Invalid agent ID format');
     }
-    
+
     if (paymentRequest.amount <= 0) {
       throw new Error('Payment amount must be positive');
     }
-    
+
     if (!paymentRequest.merchant || paymentRequest.merchant.trim().length === 0) {
       throw new Error('Merchant is required');
     }
-    
-    console.log(`🔎 Checking authorization for agent: ${agentId}`);
-    
-    const credential = this.agents.get(agentId);
+
+    const rateCheck = this.limiter.tryAcquire('auth');
+    if (!rateCheck.allowed) {
+      throw new Error(`Rate limit exceeded. Try again in ${Math.ceil(rateCheck.resetIn / 1000)}s`);
+    }
+
+    this.logger.debug(`Checking authorization for agent: ${agentId}`);
+
+    const credential = this.storage.getAgent(agentId);
     if (!credential) {
+      this.logger.warn(`Agent not found: ${agentId}`);
       throw new Error(`Agent not found: ${agentId}`);
     }
-    
-    // Check authorization policies
+
     for (const policy of credential.authorizationPolicies) {
       switch (policy.policyType) {
         case 'max_daily_amount': {
           const maxAmount = policy.value as number;
           if (paymentRequest.amount > maxAmount) {
+            this.logger.warn(`Denied: ${paymentRequest.amount} > daily limit ${maxAmount}`);
             return {
               agentId,
               status: AuthorizationStatus.Denied,
@@ -117,6 +138,7 @@ export class AgentAuthSDK {
         case 'allowed_merchants': {
           const allowedMerchants = policy.value as string[];
           if (!allowedMerchants.includes(paymentRequest.merchant)) {
+            this.logger.warn(`Denied: merchant ${paymentRequest.merchant} not in allowlist`);
             return {
               agentId,
               status: AuthorizationStatus.Denied,
@@ -129,6 +151,7 @@ export class AgentAuthSDK {
         case 'max_single_amount': {
           const maxSingle = policy.value as number;
           if (paymentRequest.amount > maxSingle) {
+            this.logger.warn(`Denied: ${paymentRequest.amount} > single limit ${maxSingle}`);
             return {
               agentId,
               status: AuthorizationStatus.Denied,
@@ -140,14 +163,17 @@ export class AgentAuthSDK {
         }
       }
     }
-    
-    // All policies passed
-    console.log(`✅ Authorization approved for agent: ${agentId}`);
+
+    this.logger.info(`Authorization approved for agent: ${agentId}`);
     return {
       agentId,
       status: AuthorizationStatus.Approved,
       policyChecked: 'all_policies'
     };
+  }
+
+  getStorage(): JsonStorage {
+    return this.storage;
   }
 
   private generatePublicKey(): string {

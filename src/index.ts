@@ -2,6 +2,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { AgentAuthSDK } from './agent-sdk';
 import { PaymentProcessor } from './payment';
 import { AuditLogger } from './audit';
+import { JsonStorage } from './storage';
+import { createLogger } from './logger';
 import {
   AgentConfig,
   PaymentRequest,
@@ -9,82 +11,73 @@ import {
 } from './models';
 
 async function main() {
-  console.log('🚀 TrustPay - Privacy-Preserving Agent Payment System');
-  console.log('=====================================================');
-  
-  // Initialize T3 Agent Auth SDK
-  const sdk = new AgentAuthSDK('https://sandbox.terminal3.io');
-  
-  // Initialize payment processor
+  const logger = createLogger('Main');
+  logger.info('TrustPay - Privacy-Preserving Agent Payment System');
+  logger.info('=====================================================');
+
+  // Shared storage instance for data persistence
+  const storage = new JsonStorage('./data');
+
+  // Initialize components with shared storage
+  const sdk = new AgentAuthSDK('https://sandbox.terminal3.io', storage);
   const paymentProcessor = new PaymentProcessor(sdk);
-  
-  // Initialize audit logger
-  const auditLogger = new AuditLogger();
-  
-  // Demo: Agent registration and payment flow
-  await demoAgentWorkflow(sdk, paymentProcessor, auditLogger);
+  const auditLogger = new AuditLogger(storage);
+
+  await demoAgentWorkflow(sdk, paymentProcessor, auditLogger, logger);
 }
 
 async function demoAgentWorkflow(
   sdk: AgentAuthSDK,
   paymentProcessor: PaymentProcessor,
-  auditLogger: AuditLogger
+  auditLogger: AuditLogger,
+  logger: ReturnType<typeof createLogger>
 ) {
-  console.log('\n📋 Demo: Agent Registration & Payment Flow');
-  console.log('-------------------------------------------');
-  
+  logger.info('Demo: Agent Registration & Payment Flow');
+  logger.info('-------------------------------------------');
+
   // Step 1: Register a new agent
-  console.log('\n1️⃣ Registering new agent...');
+  logger.info('Step 1: Registering new agent...');
   const agentConfig: AgentConfig = {
     name: 'SubscriptionAgent',
     description: 'Automatically manages SaaS subscriptions',
     capabilities: ['payment', 'subscription', 'recurring'],
     authorizationPolicies: [
-      {
-        policyType: 'max_daily_amount',
-        value: 1000.0
-      },
-      {
-        policyType: 'allowed_merchants',
-        value: ['openai.com', 'anthropic.com', 'github.com']
-      }
+      { policyType: 'max_daily_amount', value: 1000.0 },
+      { policyType: 'allowed_merchants', value: ['openai.com', 'anthropic.com', 'github.com'] }
     ]
   };
-  
+
   const agentCredential = await sdk.registerAgent(agentConfig);
-  console.log(`✅ Agent registered: ${agentCredential.agentId}`);
-  console.log(`   DID: ${agentCredential.did}`);
-  
+  logger.info(`Agent registered: ${agentCredential.agentId}`);
+  logger.info(`DID: ${agentCredential.did}`);
+
   // Step 2: Verify agent identity
-  console.log('\n2️⃣ Verifying agent identity...');
+  logger.info('Step 2: Verifying agent identity...');
   const verificationResult = await sdk.verifyAgent(agentCredential.agentId);
-  console.log(`✅ Agent verified: ${verificationResult.status}`);
-  
+  logger.info(`Agent verified: ${verificationResult.status}`);
+
   // Step 3: Check authorization
-  console.log('\n3️⃣ Checking payment authorization...');
+  logger.info('Step 3: Checking payment authorization...');
   const paymentRequest: PaymentRequest = {
     agentId: agentCredential.agentId,
     merchant: 'openai.com',
     amount: 20.0,
     currency: 'USD',
     description: 'API usage payment',
-    metadata: {
-      service: 'gpt-4',
-      tokens_used: 150000
-    }
+    metadata: { service: 'gpt-4', tokens_used: 150000 }
   };
-  
+
   const authResult = await sdk.checkAuthorization(agentCredential.agentId, paymentRequest);
-  console.log(`✅ Authorization: ${authResult.status}`);
-  
+  logger.info(`Authorization: ${authResult.status}`);
+
   // Step 4: Execute payment in TEE
-  console.log('\n4️⃣ Executing payment in TEE...');
+  logger.info('Step 4: Executing payment in TEE...');
   const paymentResult = await paymentProcessor.executePayment(paymentRequest);
-  console.log(`✅ Payment successful: ${paymentResult.paymentId}`);
-  console.log(`   Transaction hash: ${paymentResult.txHash}`);
-  
+  logger.info(`Payment successful: ${paymentResult.paymentId}`);
+  logger.info(`Transaction hash: ${paymentResult.txHash}`);
+
   // Step 5: Log audit trail
-  console.log('\n5️⃣ Logging audit trail...');
+  logger.info('Step 5: Logging audit trail...');
   const auditEntry: AuditEntry = {
     entryId: uuidv4(),
     agentId: agentCredential.agentId,
@@ -101,20 +94,26 @@ async function demoAgentWorkflow(
       amount: paymentResult.amount
     })
   };
-  
+
   auditLogger.logEntry(auditEntry);
-  console.log('✅ Audit entry logged with integrity hash');
-  
+  logger.info('Audit entry logged with integrity hash');
+
   // Step 6: Generate compliance report
-  console.log('\n6️⃣ Generating compliance report...');
+  logger.info('Step 6: Generating compliance report...');
   const report = auditLogger.generateReport(agentCredential.agentId);
-  console.log(`✅ Report generated: ${report.totalEntries} entries, total amount: $${report.totalAmount.toFixed(2)}`);
-  
-  console.log('\n🎉 Demo completed successfully!');
-  console.log('=====================================================');
+  logger.info(`Report generated: ${report.totalEntries} entries, total amount: $${report.totalAmount.toFixed(2)}`);
+
+  // Step 7: Verify integrity
+  logger.info('Step 7: Verifying audit integrity...');
+  const integrityValid = auditLogger.verifyIntegrity(auditEntry);
+  logger.info(`Integrity check: ${integrityValid ? 'PASSED' : 'FAILED'}`);
+
+  logger.info('Demo completed successfully!');
+  logger.info('=====================================================');
 }
 
 main().catch((error) => {
-  console.error('❌ Error:', error.message);
+  const logger = createLogger('Main');
+  logger.error(`Error: ${error.message}`);
   process.exit(1);
 });

@@ -1,11 +1,32 @@
 import { AgentAuthSDK } from './agent-sdk';
+import { JsonStorage } from './storage';
 import { AgentConfig, AuthorizationStatus, PaymentRequest } from './models';
+import * as fs from 'fs';
+import * as path from 'path';
+
+const TEST_DATA_DIR = path.join(__dirname, '..', '.test-data-sdk');
+
+function cleanupTestDir(): void {
+  if (fs.existsSync(TEST_DATA_DIR)) {
+    fs.rmSync(TEST_DATA_DIR, { recursive: true });
+  }
+}
+
+function createTestSDK(): AgentAuthSDK {
+  cleanupTestDir();
+  const storage = new JsonStorage(TEST_DATA_DIR);
+  return new AgentAuthSDK('https://sandbox.terminal3.io', storage);
+}
 
 describe('AgentAuthSDK', () => {
   let sdk: AgentAuthSDK;
 
   beforeEach(() => {
-    sdk = new AgentAuthSDK('https://sandbox.terminal3.io');
+    sdk = createTestSDK();
+  });
+
+  afterAll(() => {
+    cleanupTestDir();
   });
 
   describe('registerAgent', () => {
@@ -39,6 +60,30 @@ describe('AgentAuthSDK', () => {
 
       expect(credential1.agentId).not.toBe(credential2.agentId);
     });
+
+    it('should reject empty name', async () => {
+      const config: AgentConfig = {
+        name: '',
+        description: 'Test agent',
+        capabilities: ['payment'],
+        authorizationPolicies: []
+      };
+
+      await expect(sdk.registerAgent(config))
+        .rejects.toThrow('Agent name is required');
+    });
+
+    it('should reject empty capabilities', async () => {
+      const config: AgentConfig = {
+        name: 'TestAgent',
+        description: 'Test agent',
+        capabilities: [],
+        authorizationPolicies: []
+      };
+
+      await expect(sdk.registerAgent(config))
+        .rejects.toThrow('At least one capability is required');
+    });
   });
 
   describe('verifyAgent', () => {
@@ -60,6 +105,11 @@ describe('AgentAuthSDK', () => {
     it('should throw error for non-existent agent', async () => {
       await expect(sdk.verifyAgent('agent_nonexistent'))
         .rejects.toThrow('Agent not found');
+    });
+
+    it('should reject invalid agent ID format', async () => {
+      await expect(sdk.verifyAgent('invalid_id'))
+        .rejects.toThrow('Invalid agent ID format');
     });
   });
 
@@ -139,6 +189,28 @@ describe('AgentAuthSDK', () => {
 
       expect(result.status).toBe(AuthorizationStatus.Denied);
       expect(result.reason).toContain('not in allowed list');
+    });
+
+    it('should reject zero amount', async () => {
+      const config: AgentConfig = {
+        name: 'TestAgent',
+        description: 'Test agent',
+        capabilities: ['payment'],
+        authorizationPolicies: []
+      };
+
+      const credential = await sdk.registerAgent(config);
+      const request: PaymentRequest = {
+        agentId: credential.agentId,
+        merchant: 'test.com',
+        amount: 0,
+        currency: 'USD',
+        description: 'Test payment',
+        metadata: {}
+      };
+
+      await expect(sdk.checkAuthorization(credential.agentId, request))
+        .rejects.toThrow('Payment amount must be positive');
     });
   });
 });
