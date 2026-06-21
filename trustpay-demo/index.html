@@ -39,6 +39,21 @@
       visibility: hidden;
     }
 
+    .subtitle {
+      position: absolute;
+      bottom: 60px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-size: 28px;
+      color: #ffffff;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 16px 32px;
+      margin: 0 200px;
+      border-radius: 8px;
+      opacity: 0;
+    }
+
     .hero-title {
       font-size: 80px;
       font-weight: 700;
@@ -217,12 +232,14 @@
 </head>
 <body>
   <div data-composition-id="trustpay-demo" data-width="1920" data-height="1080" data-start="0">
+    <audio id="narration" data-track-index="10" src="narration.mp3"></audio>
     <!-- Scene 1: Title -->
     <div id="scene1" class="scene" style="opacity: 1; visibility: visible;">
       <div class="glow glow-1"></div>
       <div class="glow glow-2"></div>
       <h1 class="hero-title">TrustPay</h1>
       <p class="hero-subtitle">Privacy-Preserving AI Agent Payment System</p>
+      <div id="sub1" class="subtitle">Welcome to TrustPay - the privacy-preserving AI agent payment system</div>
     </div>
 
     <!-- Scene 2: Features -->
@@ -244,6 +261,7 @@
           <p class="feature-desc">Tamper-proof logging with integrity hashes</p>
         </div>
       </div>
+      <div id="sub2" class="subtitle">Secure identity, policy control, and tamper-proof audit trails</div>
     </div>
 
     <!-- Scene 3: Flow -->
@@ -273,6 +291,7 @@
           <p class="flow-step-desc">Log & verify</p>
         </div>
       </div>
+      <div id="sub3" class="subtitle">Register, authorize, execute, and audit - a simple 4-step workflow</div>
     </div>
 
     <!-- Scene 4: Stats -->
@@ -295,6 +314,7 @@
           <div class="stat-label">Type Safe</div>
         </div>
       </div>
+      <div id="sub4" class="subtitle">41 unit tests, 9 API endpoints, 4 policy types, 100% type safety</div>
     </div>
 
     <!-- Scene 5: Code -->
@@ -309,6 +329,7 @@
         <div class="code-line">&nbsp;&nbsp;]</div>
         <div class="code-line">});</div>
       </div>
+      <div id="sub5" class="subtitle">Simple TypeScript API with full type safety</div>
     </div>
 
     <!-- Scene 6: CTA -->
@@ -317,6 +338,7 @@
       <div class="glow glow-2"></div>
       <h2 class="cta-text">Built with Terminal 3 Agent Auth SDK</h2>
       <a href="https://github.com/ponchy123/trustpay-agent" class="cta-link">View on GitHub</a>
+      <div id="sub6" class="subtitle">Built with Terminal 3 Agent Auth SDK - view on GitHub</div>
     </div>
 
     <script>
@@ -326,6 +348,7 @@
       tl.set("#scene1", { visibility: "visible" }, 0);
       tl.from("#scene1 .hero-title", { y: 50, opacity: 0, duration: 0.8, ease: "power3.out" }, 0.3);
       tl.from("#scene1 .hero-subtitle", { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, 0.6);
+      tl.fromTo("#sub1", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5 }, 1);
       tl.set("#scene1", { visibility: "hidden" }, 4);
 
       // Scene 2: Features (4-9s)
@@ -334,6 +357,7 @@
       tl.from("#scene2 .feature-card:nth-child(1)", { y: 40, opacity: 0, duration: 0.6, ease: "power3.out" }, 4.3);
       tl.from("#scene2 .feature-card:nth-child(2)", { y: 40, opacity: 0, duration: 0.6, ease: "power3.out" }, 4.5);
       tl.from("#scene2 .feature-card:nth-child(3)", { y: 40, opacity: 0, duration: 0.6, ease: "power3.out" }, 4.7);
+      tl.fromTo("#sub2", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5 }, 5.5);
       tl.set("#scene2", { visibility: "hidden" }, 9);
 
       // Scene 3: Flow (9-14s)
@@ -346,6 +370,7 @@
       tl.from("#scene3 .flow-step:nth-child(5)", { x: -30, opacity: 0, duration: 0.5, ease: "power3.out" }, 10.3);
       tl.from("#scene3 .flow-arrow:nth-child(6)", { opacity: 0, duration: 0.3 }, 10.6);
       tl.from("#scene3 .flow-step:nth-child(7)", { x: -30, opacity: 0, duration: 0.5, ease: "power3.out" }, 10.8);
+      tl.fromTo("#sub3", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5 }, 11.5);
       tl.set("#scene3", { visibility: "hidden" }, 14);
 
       // Scene 4: Stats (14-18s)
@@ -355,12 +380,14 @@
       tl.from("#scene4 .stat-item:nth-child(2)", { y: 30, opacity: 0, duration: 0.5, ease: "power3.out" }, 14.5);
       tl.from("#scene4 .stat-item:nth-child(3)", { y: 30, opacity: 0, duration: 0.5, ease: "power3.out" }, 14.7);
       tl.from("#scene4 .stat-item:nth-child(4)", { y: 30, opacity: 0, duration: 0.5, ease: "power3.out" }, 14.9);
+      tl.fromTo("#sub4", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5 }, 15.5);
       tl.set("#scene4", { visibility: "hidden" }, 18);
 
       // Scene 5: Code (18-22s)
       tl.set("#scene5", { visibility: "visible" }, 18);
       tl.fromTo("#scene5", { opacity: 0 }, { opacity: 1, duration: 0.5 }, 18);
       tl.from("#scene5 .code-block", { y: 20, opacity: 0, duration: 0.6, ease: "power3.out" }, 18.3);
+      tl.fromTo("#sub5", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5 }, 19);
       tl.set("#scene5", { visibility: "hidden" }, 22);
 
       // Scene 6: CTA (22-26s)
@@ -368,6 +395,7 @@
       tl.fromTo("#scene6", { opacity: 0 }, { opacity: 1, duration: 0.5 }, 22);
       tl.from("#scene6 .cta-text", { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, 22.3);
       tl.from("#scene6 .cta-link", { y: 20, opacity: 0, duration: 0.5, ease: "power3.out" }, 22.6);
+      tl.fromTo("#sub6", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5 }, 23);
       tl.set("#scene6", { visibility: "hidden" }, 26);
 
       // Register timeline
