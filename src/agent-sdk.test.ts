@@ -73,6 +73,18 @@ describe('AgentAuthSDK', () => {
         .rejects.toThrow('Agent name is required');
     });
 
+    it('should reject whitespace-only name', async () => {
+      const config: AgentConfig = {
+        name: '   ',
+        description: 'Test agent',
+        capabilities: ['payment'],
+        authorizationPolicies: []
+      };
+
+      await expect(sdk.registerAgent(config))
+        .rejects.toThrow('Agent name is required');
+    });
+
     it('should reject empty capabilities', async () => {
       const config: AgentConfig = {
         name: 'TestAgent',
@@ -83,6 +95,21 @@ describe('AgentAuthSDK', () => {
 
       await expect(sdk.registerAgent(config))
         .rejects.toThrow('At least one capability is required');
+    });
+
+    it('should store credential persistently', async () => {
+      const config: AgentConfig = {
+        name: 'TestAgent',
+        description: 'Test agent',
+        capabilities: ['payment'],
+        authorizationPolicies: []
+      };
+
+      const credential = await sdk.registerAgent(config);
+      const stored = sdk.getStorage().getAgent(credential.agentId);
+
+      expect(stored).toBeDefined();
+      expect(stored?.agentId).toBe(credential.agentId);
     });
   });
 
@@ -110,6 +137,27 @@ describe('AgentAuthSDK', () => {
     it('should reject invalid agent ID format', async () => {
       await expect(sdk.verifyAgent('invalid_id'))
         .rejects.toThrow('Invalid agent ID format');
+    });
+
+    it('should reject empty agent ID', async () => {
+      await expect(sdk.verifyAgent(''))
+        .rejects.toThrow('Invalid agent ID format');
+    });
+
+    it('should set expiration date 24 hours from now', async () => {
+      const config: AgentConfig = {
+        name: 'TestAgent',
+        description: 'Test agent',
+        capabilities: ['payment'],
+        authorizationPolicies: []
+      };
+
+      const credential = await sdk.registerAgent(config);
+      const result = await sdk.verifyAgent(credential.agentId);
+
+      const expectedExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
+      const diff = Math.abs(result.expiresAt.getTime() - expectedExpiry.getTime());
+      expect(diff).toBeLessThan(1000);
     });
   });
 
@@ -211,6 +259,127 @@ describe('AgentAuthSDK', () => {
 
       await expect(sdk.checkAuthorization(credential.agentId, request))
         .rejects.toThrow('Payment amount must be positive');
+    });
+
+    it('should reject negative amount', async () => {
+      const config: AgentConfig = {
+        name: 'TestAgent',
+        description: 'Test agent',
+        capabilities: ['payment'],
+        authorizationPolicies: []
+      };
+
+      const credential = await sdk.registerAgent(config);
+      const request: PaymentRequest = {
+        agentId: credential.agentId,
+        merchant: 'test.com',
+        amount: -10,
+        currency: 'USD',
+        description: 'Test payment',
+        metadata: {}
+      };
+
+      await expect(sdk.checkAuthorization(credential.agentId, request))
+        .rejects.toThrow('Payment amount must be positive');
+    });
+
+    it('should reject empty merchant', async () => {
+      const config: AgentConfig = {
+        name: 'TestAgent',
+        description: 'Test agent',
+        capabilities: ['payment'],
+        authorizationPolicies: []
+      };
+
+      const credential = await sdk.registerAgent(config);
+      const request: PaymentRequest = {
+        agentId: credential.agentId,
+        merchant: '',
+        amount: 50.0,
+        currency: 'USD',
+        description: 'Test payment',
+        metadata: {}
+      };
+
+      await expect(sdk.checkAuthorization(credential.agentId, request))
+        .rejects.toThrow('Merchant is required');
+    });
+
+    it('should approve payment within single transaction limit', async () => {
+      const config: AgentConfig = {
+        name: 'TestAgent',
+        description: 'Test agent',
+        capabilities: ['payment'],
+        authorizationPolicies: [
+          { policyType: 'max_single_amount', value: 200.0 }
+        ]
+      };
+
+      const credential = await sdk.registerAgent(config);
+      const request: PaymentRequest = {
+        agentId: credential.agentId,
+        merchant: 'test.com',
+        amount: 150.0,
+        currency: 'USD',
+        description: 'Test payment',
+        metadata: {}
+      };
+
+      const result = await sdk.checkAuthorization(credential.agentId, request);
+
+      expect(result.status).toBe(AuthorizationStatus.Approved);
+    });
+
+    it('should deny payment exceeding single transaction limit', async () => {
+      const config: AgentConfig = {
+        name: 'TestAgent',
+        description: 'Test agent',
+        capabilities: ['payment'],
+        authorizationPolicies: [
+          { policyType: 'max_single_amount', value: 100.0 }
+        ]
+      };
+
+      const credential = await sdk.registerAgent(config);
+      const request: PaymentRequest = {
+        agentId: credential.agentId,
+        merchant: 'test.com',
+        amount: 150.0,
+        currency: 'USD',
+        description: 'Test payment',
+        metadata: {}
+      };
+
+      const result = await sdk.checkAuthorization(credential.agentId, request);
+
+      expect(result.status).toBe(AuthorizationStatus.Denied);
+      expect(result.reason).toContain('exceeds single transaction limit');
+    });
+
+    it('should approve payment within time restriction (business hours)', async () => {
+      const currentHour = new Date().getHours();
+      const config: AgentConfig = {
+        name: 'TestAgent',
+        description: 'Test agent',
+        capabilities: ['payment'],
+        authorizationPolicies: [
+          { policyType: 'time_restriction', value: { allowedHours: [0, 23] } }
+        ]
+      };
+
+      const credential = await sdk.registerAgent(config);
+      const request: PaymentRequest = {
+        agentId: credential.agentId,
+        merchant: 'test.com',
+        amount: 50.0,
+        currency: 'USD',
+        description: 'Test payment',
+        metadata: {}
+      };
+
+      const result = await sdk.checkAuthorization(credential.agentId, request);
+
+      expect(result.status).toBe(AuthorizationStatus.Approved);
     });
   });
 });

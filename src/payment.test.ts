@@ -13,13 +13,6 @@ function cleanupTestDir(): void {
   }
 }
 
-function createTestProcessor(): PaymentProcessor {
-  cleanupTestDir();
-  const storage = new JsonStorage(TEST_DATA_DIR);
-  const sdk = new AgentAuthSDK('https://sandbox.terminal3.io', storage);
-  return new PaymentProcessor(sdk);
-}
-
 describe('PaymentProcessor', () => {
   let processor: PaymentProcessor;
   let sdk: AgentAuthSDK;
@@ -129,6 +122,152 @@ describe('PaymentProcessor', () => {
 
       await expect(processor.executePayment(request))
         .rejects.toThrow('Merchant is required');
+    });
+
+    it('should return unique payment IDs', async () => {
+      const config: AgentConfig = {
+        name: 'TestAgent',
+        description: 'Test agent',
+        capabilities: ['payment'],
+        authorizationPolicies: [
+          { policyType: 'max_daily_amount', value: 100.0 }
+        ]
+      };
+
+      const credential = await sdk.registerAgent(config);
+      const request: PaymentRequest = {
+        agentId: credential.agentId,
+        merchant: 'openai.com',
+        amount: 10.0,
+        currency: 'USD',
+        description: 'Test',
+        metadata: {}
+      };
+
+      const result1 = await processor.executePayment(request);
+      const result2 = await processor.executePayment(request);
+
+      expect(result1.paymentId).not.toBe(result2.paymentId);
+    });
+
+    it('should return valid transaction hash', async () => {
+      const config: AgentConfig = {
+        name: 'TestAgent',
+        description: 'Test agent',
+        capabilities: ['payment'],
+        authorizationPolicies: [
+          { policyType: 'max_daily_amount', value: 100.0 }
+        ]
+      };
+
+      const credential = await sdk.registerAgent(config);
+      const request: PaymentRequest = {
+        agentId: credential.agentId,
+        merchant: 'openai.com',
+        amount: 10.0,
+        currency: 'USD',
+        description: 'Test',
+        metadata: {}
+      };
+
+      const result = await processor.executePayment(request);
+
+      expect(result.txHash).toMatch(/^0x[0-9a-f]{64}$/);
+    });
+  });
+
+  describe('executeBatchPayments', () => {
+    it('should execute multiple payments', async () => {
+      const config: AgentConfig = {
+        name: 'TestAgent',
+        description: 'Test agent',
+        capabilities: ['payment'],
+        authorizationPolicies: [
+          { policyType: 'max_daily_amount', value: 1000.0 }
+        ]
+      };
+
+      const credential = await sdk.registerAgent(config);
+      const requests: PaymentRequest[] = [
+        {
+          agentId: credential.agentId,
+          merchant: 'openai.com',
+          amount: 10.0,
+          currency: 'USD',
+          description: 'Payment 1',
+          metadata: {}
+        },
+        {
+          agentId: credential.agentId,
+          merchant: 'github.com',
+          amount: 20.0,
+          currency: 'USD',
+          description: 'Payment 2',
+          metadata: {}
+        }
+      ];
+
+      const results = await processor.executeBatchPayments(requests);
+
+      expect(results).toHaveLength(2);
+      expect(results[0].status).toBe(PaymentStatus.Completed);
+      expect(results[1].status).toBe(PaymentStatus.Completed);
+    });
+
+    it('should handle partial failures in batch', async () => {
+      const config: AgentConfig = {
+        name: 'TestAgent',
+        description: 'Test agent',
+        capabilities: ['payment'],
+        authorizationPolicies: [
+          { policyType: 'max_daily_amount', value: 15.0 }
+        ]
+      };
+
+      const credential = await sdk.registerAgent(config);
+      const requests: PaymentRequest[] = [
+        {
+          agentId: credential.agentId,
+          merchant: 'openai.com',
+          amount: 10.0,
+          currency: 'USD',
+          description: 'Payment 1',
+          metadata: {}
+        },
+        {
+          agentId: credential.agentId,
+          merchant: 'github.com',
+          amount: 20.0,
+          currency: 'USD',
+          description: 'Payment 2',
+          metadata: {}
+        }
+      ];
+
+      const results = await processor.executeBatchPayments(requests);
+
+      expect(results).toHaveLength(2);
+      expect(results[0].status).toBe(PaymentStatus.Completed);
+      expect(results[1].status).toBe(PaymentStatus.Failed);
+    });
+  });
+
+  describe('refundPayment', () => {
+    it('should process refund', async () => {
+      const result = await processor.refundPayment('pay_test123', 'Customer request');
+
+      expect(result.status).toBe(PaymentStatus.Refunded);
+      expect(result.paymentId).toMatch(/^refund_/);
+    });
+
+    it('should reject empty payment ID', async () => {
+      await expect(processor.refundPayment('', 'Reason'))
+        .rejects.toThrow('Payment ID is required');
+    });
+
+    it('should reject empty reason', async () => {
+      await expect(processor.refundPayment('pay_test123', ''))
+        .rejects.toThrow('Refund reason is required');
     });
   });
 });
