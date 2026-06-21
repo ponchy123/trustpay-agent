@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1920, height=1080">
+  <title>TrustPay Demo</title>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: linear-gradient(135deg, #0a0e1a 0%, #1a1f3a 100%);
+      color: #ffffff;
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+    }
+
+    [data-composition-id="trustpay-demo"] {
+      width: 100%;
+      height: 100%;
+    }
+
+    .scene {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 80px 120px;
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    .hero-title {
+      font-size: 80px;
+      font-weight: 700;
+      text-align: center;
+      background: linear-gradient(135deg, #3b82f6, #06b6d4);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 24px;
+    }
+
+    .hero-subtitle {
+      font-size: 32px;
+      color: #94a3b8;
+      text-align: center;
+      max-width: 800px;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 40px;
+      width: 100%;
+      max-width: 1400px;
+    }
+
+    .feature-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      border-radius: 16px;
+      padding: 40px;
+      text-align: center;
+    }
+
+    .feature-icon {
+      font-size: 64px;
+      margin-bottom: 20px;
+    }
+
+    .feature-title {
+      font-size: 28px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: #ffffff;
+    }
+
+    .feature-desc {
+      font-size: 18px;
+      color: #94a3b8;
+      line-height: 1.5;
+    }
+
+    .flow-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 40px;
+      width: 100%;
+      max-width: 1200px;
+    }
+
+    .flow-step {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      border-radius: 16px;
+      padding: 32px;
+      text-align: center;
+      min-width: 200px;
+    }
+
+    .flow-step-num {
+      font-size: 48px;
+      font-weight: 700;
+      color: #3b82f6;
+      margin-bottom: 12px;
+    }
+
+    .flow-step-title {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .flow-step-desc {
+      font-size: 16px;
+      color: #94a3b8;
+    }
+
+    .flow-arrow {
+      font-size: 48px;
+      color: #3b82f6;
+    }
+
+    .stats-container {
+      display: flex;
+      justify-content: center;
+      gap: 80px;
+      width: 100%;
+    }
+
+    .stat-item {
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 64px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #3b82f6, #06b6d4);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .stat-label {
+      font-size: 20px;
+      color: #94a3b8;
+      margin-top: 8px;
+    }
+
+    .code-block {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      border-radius: 12px;
+      padding: 32px;
+      font-family: monospace;
+      font-size: 20px;
+      color: #10b981;
+      text-align: left;
+      max-width: 800px;
+      width: 100%;
+    }
+
+    .code-line {
+      margin-bottom: 8px;
+    }
+
+    .code-comment {
+      color: #64748b;
+    }
+
+    .cta-text {
+      font-size: 36px;
+      font-weight: 600;
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .cta-link {
+      font-size: 28px;
+      color: #3b82f6;
+      text-decoration: none;
+      border: 2px solid #3b82f6;
+      padding: 16px 48px;
+      border-radius: 8px;
+    }
+
+    .glow {
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(59, 130, 246, 0.2) 0%, transparent 70%);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .glow-1 {
+      top: -100px;
+      right: -100px;
+    }
+
+    .glow-2 {
+      bottom: -100px;
+      left: -100px;
+    }
+  </style>
+</head>
+<body>
+  <div data-composition-id="trustpay-demo" data-width="1920" data-height="1080" data-start="0">
+    <!-- Scene 1: Title -->
+    <div id="scene1" class="scene" style="opacity: 1; visibility: visible;">
+      <div class="glow glow-1"></div>
+      <div class="glow glow-2"></div>
+      <h1 class="hero-title">TrustPay</h1>
+      <p class="hero-subtitle">Privacy-Preserving AI Agent Payment System</p>
+    </div>
+
+    <!-- Scene 2: Features -->
+    <div id="scene2" class="scene">
+      <div class="feature-grid">
+        <div class="feature-card">
+          <div class="feature-icon">🔐</div>
+          <h3 class="feature-title">Secure Identity</h3>
+          <p class="feature-desc">Verifiable credentials with DID support</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🛡️</div>
+          <h3 class="feature-title">Policy Control</h3>
+          <p class="feature-desc">Configurable spending limits & merchant whitelists</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📋</div>
+          <h3 class="feature-title">Audit Trail</h3>
+          <p class="feature-desc">Tamper-proof logging with integrity hashes</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scene 3: Flow -->
+    <div id="scene3" class="scene">
+      <div class="flow-container">
+        <div class="flow-step">
+          <div class="flow-step-num">1</div>
+          <h3 class="flow-step-title">Register</h3>
+          <p class="flow-step-desc">Create agent with DID</p>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="flow-step-num">2</div>
+          <h3 class="flow-step-title">Authorize</h3>
+          <p class="flow-step-desc">Check policies</p>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="flow-step-num">3</div>
+          <h3 class="flow-step-title">Execute</h3>
+          <p class="flow-step-desc">TEE-secured payment</p>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="flow-step-num">4</div>
+          <h3 class="flow-step-title">Audit</h3>
+          <p class="flow-step-desc">Log & verify</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scene 4: Stats -->
+    <div id="scene4" class="scene">
+      <div class="stats-container">
+        <div class="stat-item">
+          <div class="stat-value">41</div>
+          <div class="stat-label">Unit Tests</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">9</div>
+          <div class="stat-label">API Endpoints</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">4</div>
+          <div class="stat-label">Policy Types</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">100%</div>
+          <div class="stat-label">Type Safe</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scene 5: Code -->
+    <div id="scene5" class="scene">
+      <div class="code-block">
+        <div class="code-line"><span class="code-comment">// Register agent</span></div>
+        <div class="code-line">const agent = await sdk.registerAgent({</div>
+        <div class="code-line">&nbsp;&nbsp;name: "PaymentAgent",</div>
+        <div class="code-line">&nbsp;&nbsp;capabilities: ["payment"],</div>
+        <div class="code-line">&nbsp;&nbsp;authorizationPolicies: [</div>
+        <div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;{ policyType: "max_daily_amount", value: 1000 }</div>
+        <div class="code-line">&nbsp;&nbsp;]</div>
+        <div class="code-line">});</div>
+      </div>
+    </div>
+
+    <!-- Scene 6: CTA -->
+    <div id="scene6" class="scene">
+      <div class="glow glow-1"></div>
+      <div class="glow glow-2"></div>
+      <h2 class="cta-text">Built with Terminal 3 Agent Auth SDK</h2>
+      <a href="https://github.com/ponchy123/trustpay-agent" class="cta-link">View on GitHub</a>
+    </div>
+
+    <script>
+      const tl = gsap.timeline({ paused: true });
+
+      // Scene 1: Title (0-4s)
+      tl.set("#scene1", { visibility: "visible" }, 0);
+      tl.from("#scene1 .hero-title", { y: 50, opacity: 0, duration: 0.8, ease: "power3.out" }, 0.3);
+      tl.from("#scene1 .hero-subtitle", { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, 0.6);
+      tl.set("#scene1", { visibility: "hidden" }, 4);
+
+      // Scene 2: Features (4-9s)
+      tl.set("#scene2", { visibility: "visible" }, 4);
+      tl.fromTo("#scene2", { opacity: 0 }, { opacity: 1, duration: 0.5 }, 4);
+      tl.from("#scene2 .feature-card:nth-child(1)", { y: 40, opacity: 0, duration: 0.6, ease: "power3.out" }, 4.3);
+      tl.from("#scene2 .feature-card:nth-child(2)", { y: 40, opacity: 0, duration: 0.6, ease: "power3.out" }, 4.5);
+      tl.from("#scene2 .feature-card:nth-child(3)", { y: 40, opacity: 0, duration: 0.6, ease: "power3.out" }, 4.7);
+      tl.set("#scene2", { visibility: "hidden" }, 9);
+
+      // Scene 3: Flow (9-14s)
+      tl.set("#scene3", { visibility: "visible" }, 9);
+      tl.fromTo("#scene3", { opacity: 0 }, { opacity: 1, duration: 0.5 }, 9);
+      tl.from("#scene3 .flow-step:nth-child(1)", { x: -30, opacity: 0, duration: 0.5, ease: "power3.out" }, 9.3);
+      tl.from("#scene3 .flow-arrow:nth-child(2)", { opacity: 0, duration: 0.3 }, 9.6);
+      tl.from("#scene3 .flow-step:nth-child(3)", { x: -30, opacity: 0, duration: 0.5, ease: "power3.out" }, 9.8);
+      tl.from("#scene3 .flow-arrow:nth-child(4)", { opacity: 0, duration: 0.3 }, 10.1);
+      tl.from("#scene3 .flow-step:nth-child(5)", { x: -30, opacity: 0, duration: 0.5, ease: "power3.out" }, 10.3);
+      tl.from("#scene3 .flow-arrow:nth-child(6)", { opacity: 0, duration: 0.3 }, 10.6);
+      tl.from("#scene3 .flow-step:nth-child(7)", { x: -30, opacity: 0, duration: 0.5, ease: "power3.out" }, 10.8);
+      tl.set("#scene3", { visibility: "hidden" }, 14);
+
+      // Scene 4: Stats (14-18s)
+      tl.set("#scene4", { visibility: "visible" }, 14);
+      tl.fromTo("#scene4", { opacity: 0 }, { opacity: 1, duration: 0.5 }, 14);
+      tl.from("#scene4 .stat-item:nth-child(1)", { y: 30, opacity: 0, duration: 0.5, ease: "power3.out" }, 14.3);
+      tl.from("#scene4 .stat-item:nth-child(2)", { y: 30, opacity: 0, duration: 0.5, ease: "power3.out" }, 14.5);
+      tl.from("#scene4 .stat-item:nth-child(3)", { y: 30, opacity: 0, duration: 0.5, ease: "power3.out" }, 14.7);
+      tl.from("#scene4 .stat-item:nth-child(4)", { y: 30, opacity: 0, duration: 0.5, ease: "power3.out" }, 14.9);
+      tl.set("#scene4", { visibility: "hidden" }, 18);
+
+      // Scene 5: Code (18-22s)
+      tl.set("#scene5", { visibility: "visible" }, 18);
+      tl.fromTo("#scene5", { opacity: 0 }, { opacity: 1, duration: 0.5 }, 18);
+      tl.from("#scene5 .code-block", { y: 20, opacity: 0, duration: 0.6, ease: "power3.out" }, 18.3);
+      tl.set("#scene5", { visibility: "hidden" }, 22);
+
+      // Scene 6: CTA (22-26s)
+      tl.set("#scene6", { visibility: "visible" }, 22);
+      tl.fromTo("#scene6", { opacity: 0 }, { opacity: 1, duration: 0.5 }, 22);
+      tl.from("#scene6 .cta-text", { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, 22.3);
+      tl.from("#scene6 .cta-link", { y: 20, opacity: 0, duration: 0.5, ease: "power3.out" }, 22.6);
+      tl.set("#scene6", { visibility: "hidden" }, 26);
+
+      // Register timeline
+      window.__timelines = window.__timelines || {};
+      window.__timelines["trustpay-demo"] = tl;
+    </script>
+  </div>
+</body>
+</html>
