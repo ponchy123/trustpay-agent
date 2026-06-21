@@ -17,6 +17,7 @@ export interface AgentCredential {
   did: string;
   publicKey: string;
   createdAt: Date;
+  expiredAt?: Date;
   capabilities: string[];
   authorizationPolicies: AuthorizationPolicy[];
 }

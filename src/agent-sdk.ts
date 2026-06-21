@@ -80,14 +80,25 @@ export class AgentAuthSDK {
       throw new Error(`Agent not found: ${agentId}`);
     }
 
+    const verifiedAt = new Date();
+    const expiresAt = new Date(verifiedAt.getTime() + 24 * 60 * 60 * 1000);
+
+    const status = credential.expiredAt && new Date(credential.expiredAt) < verifiedAt
+      ? VerificationStatus.Expired
+      : VerificationStatus.Verified;
+
+    if (status === VerificationStatus.Expired) {
+      this.logger.warn(`Agent expired: ${agentId}`);
+    }
+
     const result: VerificationResult = {
       agentId,
-      status: VerificationStatus.Verified,
-      verifiedAt: new Date(),
-      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
+      status,
+      verifiedAt,
+      expiresAt
     };
 
-    this.logger.info(`Agent verified: ${agentId}`);
+    this.logger.info(`Agent verified: ${agentId} (status: ${status})`);
     return result;
   }
 
@@ -158,6 +169,35 @@ export class AgentAuthSDK {
               policyChecked: policy.policyType,
               reason: `Amount ${paymentRequest.amount} exceeds single transaction limit ${maxSingle}`
             };
+          }
+          break;
+        }
+        case 'time_restriction': {
+          const restriction = policy.value as { allowedHours: [number, number] };
+          const now = new Date();
+          const currentHour = now.getHours();
+          const [startHour, endHour] = restriction.allowedHours;
+
+          if (startHour <= endHour) {
+            if (currentHour < startHour || currentHour >= endHour) {
+              this.logger.warn(`Denied: current hour ${currentHour} outside allowed range [${startHour}, ${endHour})`);
+              return {
+                agentId,
+                status: AuthorizationStatus.Denied,
+                policyChecked: policy.policyType,
+                reason: `Current hour ${currentHour} is outside allowed hours [${startHour}, ${endHour})`
+              };
+            }
+          } else {
+            if (currentHour < startHour && currentHour >= endHour) {
+              this.logger.warn(`Denied: current hour ${currentHour} outside allowed range [${startHour}, ${endHour})`);
+              return {
+                agentId,
+                status: AuthorizationStatus.Denied,
+                policyChecked: policy.policyType,
+                reason: `Current hour ${currentHour} is outside allowed hours [${startHour}, ${endHour})`
+              };
+            }
           }
           break;
         }

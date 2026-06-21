@@ -9,14 +9,26 @@ import {
 } from './models';
 import { createLogger, Logger } from './logger';
 
+export interface PaymentRetryConfig {
+  maxRetries: number;
+  retryDelayMs: number;
+}
+
+const DEFAULT_RETRY_CONFIG: PaymentRetryConfig = {
+  maxRetries: 3,
+  retryDelayMs: 1000
+};
+
 export class PaymentProcessor {
   private sdk: AgentAuthSDK;
   private logger: Logger;
+  private retryConfig: PaymentRetryConfig;
 
-  constructor(sdk: AgentAuthSDK) {
+  constructor(sdk: AgentAuthSDK, retryConfig?: PaymentRetryConfig) {
     this.sdk = sdk;
     this.logger = createLogger('Payment');
-    this.logger.info('Initialized');
+    this.retryConfig = retryConfig || DEFAULT_RETRY_CONFIG;
+    this.logger.info(`Initialized (maxRetries: ${this.retryConfig.maxRetries})`);
   }
 
   async executePayment(request: PaymentRequest): Promise<PaymentResult> {
@@ -46,10 +58,52 @@ export class PaymentProcessor {
       throw new Error(`Authorization denied: ${authorization.reason}`);
     }
 
-    const result = await this.simulateTEEPayment(request);
+    let lastError: Error | null = null;
+    for (let attempt = 1; attempt <= this.retryConfig.maxRetries; attempt++) {
+      try {
+        const result = await this.simulateTEEPayment(request);
+        this.logger.info(`Payment executed: ${result.paymentId} (attempt ${attempt}/${this.retryConfig.maxRetries})`);
+        return result;
+      } catch (error) {
+        lastError = error as Error;
+        this.logger.warn(`Payment attempt ${attempt} failed: ${lastError.message}`);
 
-    this.logger.info(`Payment executed: ${result.paymentId} (tx: ${result.txHash.slice(0, 16)}...)`);
-    return result;
+        if (attempt < this.retryConfig.maxRetries) {
+          this.logger.debug(`Retrying in ${this.retryConfig.retryDelayMs}ms...`);
+          await new Promise(resolve => setTimeout(resolve, this.retryConfig.retryDelayMs));
+        }
+      }
+    }
+
+    this.logger.error(`Payment failed after ${this.retryConfig.maxRetries} attempts`);
+    throw lastError || new Error('Payment failed after retries');
+  }
+
+  async executeBatchPayments(requests: PaymentRequest[]): Promise<PaymentResult[]> {
+    this.logger.info(`Executing batch payment: ${requests.length} requests`);
+    const results: PaymentResult[] = [];
+
+    for (const request of requests) {
+      try {
+        const result = await this.executePayment(request);
+        results.push(result);
+      } catch (error) {
+        this.logger.error(`Batch payment failed for ${request.merchant}: ${(error as Error).message}`);
+        results.push({
+          paymentId: `failed_${uuidv4()}`,
+          agentId: request.agentId,
+          merchant: request.merchant,
+          amount: request.amount,
+          currency: request.currency,
+          txHash: '',
+          executedAt: new Date(),
+          status: PaymentStatus.Failed
+        });
+      }
+    }
+
+    this.logger.info(`Batch payment completed: ${results.filter(r => r.status === PaymentStatus.Completed).length}/${requests.length} succeeded`);
+    return results;
   }
 
   private async simulateTEEPayment(request: PaymentRequest): Promise<PaymentResult> {
@@ -57,6 +111,10 @@ export class PaymentProcessor {
     const txHash = this.generateTxHash(request);
 
     await new Promise(resolve => setTimeout(resolve, 100));
+
+    if (Math.random() < 0.1) {
+      throw new Error('TEE network error');
+    }
 
     return {
       paymentId,
@@ -77,5 +135,33 @@ export class PaymentProcessor {
     hash.update(request.amount.toString());
     hash.update(uuidv4());
     return `0x${hash.digest('hex')}`;
+  }
+
+  async refundPayment(paymentId: string, reason: string): Promise<PaymentResult> {
+    if (!paymentId || paymentId.trim().length === 0) {
+      throw new Error('Payment ID is required');
+    }
+
+    if (!reason || reason.trim().length === 0) {
+      throw new Error('Refund reason is required');
+    }
+
+    this.logger.info(`Refunding payment: ${paymentId}`);
+
+    const txHash = `0x${crypto.createHash('sha256').update(`${paymentId}_${uuidv4()}`).digest('hex')}`;
+
+    const result: PaymentResult = {
+      paymentId: `refund_${uuidv4()}`,
+      agentId: 'system',
+      merchant: 'refund',
+      amount: 0,
+      currency: 'USD',
+      txHash,
+      executedAt: new Date(),
+      status: PaymentStatus.Refunded
+    };
+
+    this.logger.info(`Refund processed: ${result.paymentId} (reason: ${reason})`);
+    return result;
   }
 }
