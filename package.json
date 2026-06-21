@@ -1,0 +1,32 @@
+{
+  "name": "trustpay-agent",
+  "version": "1.0.0",
+  "description": "Privacy-preserving AI agent payment system using Terminal 3 Agent Auth SDK",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "ts-node src/index.ts",
+    "dev": "ts-node src/index.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "ai-agent",
+    "payment",
+    "privacy",
+    "terminal3",
+    "tee",
+    "blockchain"
+  ],
+  "author": "TrustPay Team",
+  "license": "MIT",
+  "dependencies": {
+    "@types/uuid": "^10.0.0",
+    "sha256": "^0.2.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^6.0.3",
+    "uuid": "^14.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^26.0.0"
+  }
+}
